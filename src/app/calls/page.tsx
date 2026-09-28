@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { IconAlertTriangle, IconExternalLink } from "@tabler/icons-react";
+import { IconAlertTriangle, IconExternalLink, IconPlayerPause } from "@tabler/icons-react";
 
 import { AppShell } from "@/components/app-shell";
 import { OutcomeBadge } from "@/components/desk/outcome-badge";
@@ -16,7 +16,13 @@ import {
 import { requireAppUser } from "@/lib/auth";
 import { loadCalls, loadEvents, parseRange } from "@/lib/desk/data";
 import { dateTime, duration, outcomeLabel, usd } from "@/lib/desk/format";
-import { classifierDisagrees, groupEvents, mcFor, OUTCOME_ORDER } from "@/lib/desk/metrics";
+import {
+  classifierDisagrees,
+  groupEvents,
+  mcFor,
+  OUTCOME_ORDER,
+  wasPaused,
+} from "@/lib/desk/metrics";
 import { cn } from "@/lib/utils";
 
 export default async function CallsPage({
@@ -127,6 +133,12 @@ export default async function CallsPage({
                   <TableCell>
                     <div className="flex flex-col items-start gap-1">
                       <OutcomeBadge outcome={call.outcome} />
+                      {wasPaused(call, byCall) ? (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <IconPlayerPause className="size-3" aria-hidden />
+                          Agent paused · rep callback
+                        </span>
+                      ) : null}
                       {classifierDisagrees(call) ? (
                         <span
                           className="flex items-center gap-1 text-xs text-muted-foreground"

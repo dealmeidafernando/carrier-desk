@@ -189,12 +189,22 @@ export function health(events: EventRow[]): Health {
   };
 }
 
-/** The MC a caller gave, even when the API stored none on the call (ineligible carriers). */
+/**
+ * The MC a caller gave, even when the API stored none on the call: ineligible carriers
+ * (`fmcsa_checked`) and calls refused while the agent was paused (`agent_paused`).
+ */
 export function mcFor(call: CallRow, byCall: EventsByCall): string | null {
   if (call.mc_number) return call.mc_number;
-  const checked = byCall.get(call.call_id)?.find((e) => e.type === "fmcsa_checked");
-  const mc = checked?.payload?.mc;
+  const event = byCall
+    .get(call.call_id)
+    ?.find((e) => e.type === "fmcsa_checked" || e.type === "agent_paused");
+  const mc = event?.payload?.mc;
   return typeof mc === "string" ? mc : null;
+}
+
+/** Refused by the Carrier Desk kill switch: the caller was promised a rep callback. */
+export function wasPaused(call: CallRow, byCall: EventsByCall): boolean {
+  return has(byCall.get(call.call_id), "agent_paused");
 }
 
 export function classifierDisagrees(call: CallRow): boolean {
