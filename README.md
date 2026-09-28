@@ -7,7 +7,8 @@ It shows signals and actions, never raw platform logs.
 | Page | What the ops manager gets |
 | --- | --- |
 | **Overview** `/` | KPIs (conversion, margin kept under MAX_BUY, ceiling breaches = 0, rounds, lift over the posted rate, call length, AI outcome audit), the funnel from call to booking, how calls ended, unmet lane demand, integration health, and the **kill switch** |
-| **Calls** `/calls` | Every call with carrier, MC, outcome, load, offer → agreed, rounds, sentiment and a link to the HappyRobot run. Flags calls where the post-call AI classifier disagrees with the API |
+| **Live call** `/live` | The call in progress, refreshed every 2 s from Twin: progress through the API's state machine, a feed of every tool call (FMCSA check, code, searches, each counter, booking), the deal against the hidden ceiling, and the loads pitched. `/live?call=<id>` replays any past call |
+| **Calls** `/calls` | Every call with carrier, MC, outcome, load, offer → agreed, rounds, sentiment, a **Replay** link to the Live view, and a link to the HappyRobot run. Flags calls where the post-call AI classifier disagrees with the API |
 | **Rep queue** `/queue` | Loads the agent booked, waiting for a senior rep: **Confirm**, **Call back** or **Release** |
 
 ## How it works

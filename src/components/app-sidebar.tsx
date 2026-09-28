@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconLayoutDashboard, IconList, IconUserCheck } from "@tabler/icons-react";
+import {
+  IconBroadcast,
+  IconLayoutDashboard,
+  IconList,
+  IconUserCheck,
+} from "@tabler/icons-react";
 
 import logo from "@/brand-assets/blacklogo.png";
 import icon from "@/brand-assets/blackicon.png";
@@ -20,6 +25,7 @@ import {
 
 const NAV = [
   { href: "/", label: "Overview", icon: IconLayoutDashboard },
+  { href: "/live", label: "Live call", icon: IconBroadcast },
   { href: "/calls", label: "Calls", icon: IconList },
   { href: "/queue", label: "Rep queue", icon: IconUserCheck },
 ];

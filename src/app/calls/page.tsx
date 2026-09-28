@@ -161,7 +161,13 @@ export default async function CallsPage({
                   <TableCell className="text-right tabular-nums">
                     {duration(call.duration_s)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="space-x-3 whitespace-nowrap text-right">
+                    <Link
+                      href={`/live?call=${call.call_id}`}
+                      className="underline underline-offset-4"
+                    >
+                      Replay
+                    </Link>
                     {call.run_url ? (
                       <a
                         href={call.run_url}
