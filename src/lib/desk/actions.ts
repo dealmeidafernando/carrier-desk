@@ -18,6 +18,12 @@ async function twinWrite(path: string, method: string, body: unknown, prefer: st
   });
 }
 
+/** Error text that names the gateway's reason, so a red toast is actionable. */
+async function twinError(response: Response): Promise<string> {
+  const detail = (await response.text().catch(() => "")).slice(0, 200);
+  return `Twin rejected the update (${response.status}${detail ? `: ${detail}` : ""}).`;
+}
+
 /** Audit trail in the same table the voice agent's API writes to. */
 async function audit(callId: string, type: string, payload: Record<string, unknown>) {
   await twinWrite("/call_events", "POST", { call_id: callId, type, payload }, "return=minimal");
@@ -42,7 +48,7 @@ export async function decideHandoff(id: number, status: HandoffStatus): Promise<
     { status, assigned_rep: user.email, updated_at: new Date().toISOString() },
     "return=representation"
   );
-  if (!response.ok) return { ok: false, error: `Twin rejected the update (${response.status}).` };
+  if (!response.ok) return { ok: false, error: await twinError(response) };
 
   const [row] = (await response.json()) as HandoffRow[];
   if (!row) return { ok: false, error: "Already handled by someone else. Refresh the queue." };
@@ -65,14 +71,29 @@ export async function decideHandoff(id: number, status: HandoffStatus): Promise<
 export async function setAgentPaused(paused: boolean): Promise<ActionResult> {
   const { user } = await requireAppUser();
   const now = new Date().toISOString();
+  const row = { value: { paused, by: user.email, at: now }, updated_at: now };
 
-  const response = await twinWrite(
-    "/agent_settings",
-    "POST",
-    { key: "kill_switch", value: { paused, by: user.email, at: now }, updated_at: now },
-    "resolution=merge-duplicates,return=minimal"
+  // Update, then insert if the row doesn't exist yet. Plain PATCH/POST instead of a PostgREST
+  // upsert (resolution=merge-duplicates): on the Twin gateway the upsert saved the row but the
+  // action still reported a failure, so rely only on the two basic verbs.
+  const updated = await twinWrite(
+    "/agent_settings?key=eq.kill_switch",
+    "PATCH",
+    row,
+    "return=representation"
   );
-  if (!response.ok) return { ok: false, error: `Twin rejected the update (${response.status}).` };
+  if (!updated.ok) return { ok: false, error: await twinError(updated) };
+
+  const rows = (await updated.json().catch(() => [])) as unknown[];
+  if (rows.length === 0) {
+    const inserted = await twinWrite(
+      "/agent_settings",
+      "POST",
+      { key: "kill_switch", ...row },
+      "return=minimal"
+    );
+    if (!inserted.ok) return { ok: false, error: await twinError(inserted) };
+  }
 
   revalidatePath("/");
   return { ok: true };
