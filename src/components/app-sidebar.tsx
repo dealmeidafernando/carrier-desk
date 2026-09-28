@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconLayoutDashboard } from "@tabler/icons-react";
+import { IconLayoutDashboard, IconList, IconUserCheck } from "@tabler/icons-react";
 
 import logo from "@/brand-assets/blacklogo.png";
 import icon from "@/brand-assets/blackicon.png";
@@ -17,6 +17,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+
+const NAV = [
+  { href: "/", label: "Overview", icon: IconLayoutDashboard },
+  { href: "/calls", label: "Calls", icon: IconList },
+  { href: "/queue", label: "Rep queue", icon: IconUserCheck },
+];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -49,16 +55,18 @@ export function AppSidebar() {
         <SidebarGroup className="pt-6">
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={pathname === "/"}
-                  tooltip="HappyRobot Custom App"
-                  render={<Link href="/" />}
-                >
-                  <IconLayoutDashboard />
-                  <span>HappyRobot Custom App</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {NAV.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    isActive={pathname === item.href}
+                    tooltip={item.label}
+                    render={<Link href={item.href} />}
+                  >
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
